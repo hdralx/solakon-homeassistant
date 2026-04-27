@@ -1,0 +1,22 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Solakon Solar",
+        "description": "Tokens aus dem Browser-LocalStorage von app.solakon.de",
+        "data": {
+          "access_token": "Access Token",
+          "refresh_token": "Refresh Token"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Ungültiger Token — bitte neu einloggen und Token kopieren",
+      "cannot_connect": "Verbindung zu Solakon fehlgeschlagen",
+      "unknown": "Unbekannter Fehler"
+    },
+    "abort": {
+      "already_configured": "Solakon ist bereits konfiguriert"
+    }
+  }
+}
