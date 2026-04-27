@@ -14,4 +14,4 @@ CONF_ACCESS_TOKEN = "access_token"
 CONF_REFRESH_TOKEN = "refresh_token"
 CONF_EMAIL = "email"
 
-UPDATE_INTERVAL = 60  # seconds
+UPDATE_INTERVAL = 300  # seconds
