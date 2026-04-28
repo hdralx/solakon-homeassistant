@@ -3,15 +3,21 @@
     "step": {
       "user": {
         "title": "Solakon Solar",
-        "description": "Tokens aus dem Browser-LocalStorage von app.solakon.de",
+        "description": "Gib deine E-Mail-Adresse ein. Du erhältst einen Code per E-Mail.",
         "data": {
-          "access_token": "Access Token",
-          "refresh_token": "Refresh Token"
+          "email": "E-Mail-Adresse"
+        }
+      },
+      "otp": {
+        "title": "Code bestätigen",
+        "description": "Gib den Code ein, der an {email} gesendet wurde.",
+        "data": {
+          "otp": "Code"
         }
       }
     },
     "error": {
-      "invalid_auth": "Ungültiger Token — bitte neu einloggen und Token kopieren",
+      "invalid_auth": "Ungültiger oder abgelaufener Code",
       "cannot_connect": "Verbindung zu Solakon fehlgeschlagen",
       "unknown": "Unbekannter Fehler"
     },

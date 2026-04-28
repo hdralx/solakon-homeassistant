@@ -9,38 +9,60 @@ import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import SolakonAuthError, SolakonApiError, verify_token
-from .const import CONF_ACCESS_TOKEN, CONF_EMAIL, CONF_REFRESH_TOKEN, DOMAIN
+from .api import SolakonAuthError, SolakonApiError, request_otp, verify_otp
+from .const import ANON_KEY, CONF_ACCESS_TOKEN, CONF_EMAIL, CONF_REFRESH_TOKEN, DB_BASE, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-STEP_TOKEN_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_ACCESS_TOKEN): str,
-        vol.Required(CONF_REFRESH_TOKEN): str,
-    }
-)
+STEP_EMAIL_SCHEMA = vol.Schema({vol.Required(CONF_EMAIL): str})
+STEP_OTP_SCHEMA = vol.Schema({vol.Required("otp"): str})
 
 
 class SolakonConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
+    def __init__(self) -> None:
+        self._email: str = ""
+
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         errors: dict[str, str] = {}
 
         if user_input is not None:
+            self._email = user_input[CONF_EMAIL].strip().lower()
             session = async_get_clientsession(self.hass)
             try:
-                user = await verify_token(session, user_input[CONF_ACCESS_TOKEN])
-                email = user.get("email", "solakon")
-                await self.async_set_unique_id(email)
+                await request_otp(session, self._email)
+                return await self.async_step_otp()
+            except SolakonApiError:
+                errors["base"] = "cannot_connect"
+            except aiohttp.ClientError:
+                errors["base"] = "cannot_connect"
+            except Exception:
+                _LOGGER.exception("Unexpected error requesting OTP")
+                errors["base"] = "unknown"
+
+        return self.async_show_form(
+            step_id="user",
+            data_schema=STEP_EMAIL_SCHEMA,
+            errors=errors,
+        )
+
+    async def async_step_otp(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            otp = user_input["otp"].strip()
+            session = async_get_clientsession(self.hass)
+            try:
+                tokens = await verify_otp(session, self._email, otp)
+                await self.async_set_unique_id(self._email)
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
-                    title=f"Solakon ({email})",
+                    title=f"Solakon ({self._email})",
                     data={
-                        CONF_EMAIL: email,
-                        CONF_ACCESS_TOKEN: user_input[CONF_ACCESS_TOKEN],
-                        CONF_REFRESH_TOKEN: user_input[CONF_REFRESH_TOKEN],
+                        CONF_EMAIL: self._email,
+                        CONF_ACCESS_TOKEN: tokens["access_token"],
+                        CONF_REFRESH_TOKEN: tokens["refresh_token"],
                     },
                 )
             except SolakonAuthError:
@@ -50,19 +72,12 @@ class SolakonConfigFlow(ConfigFlow, domain=DOMAIN):
             except aiohttp.ClientError:
                 errors["base"] = "cannot_connect"
             except Exception:
-                _LOGGER.exception("Unexpected error during setup")
+                _LOGGER.exception("Unexpected error verifying OTP")
                 errors["base"] = "unknown"
 
         return self.async_show_form(
-            step_id="user",
-            data_schema=STEP_TOKEN_SCHEMA,
+            step_id="otp",
+            data_schema=STEP_OTP_SCHEMA,
             errors=errors,
-            description_placeholders={
-                "instructions": (
-                    "1. Öffne app.solakon.de und logge dich ein\n"
-                    "2. Drücke F12 → Application → Local Storage\n"
-                    "3. Suche nach 'sb-banzku...-auth-token'\n"
-                    "4. Kopiere 'access_token' und 'refresh_token'"
-                )
-            },
+            description_placeholders={"email": self._email},
         )
