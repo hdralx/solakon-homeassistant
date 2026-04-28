@@ -4,6 +4,8 @@ PLATFORMS = ["sensor"]
 
 API_BASE = "https://api.app.solakon.de"
 DB_BASE = "https://db.app.solakon.de"
+# Public anon key — intentionally embedded, same as in the official Solakon app JS bundle.
+# It identifies the Supabase project but grants no elevated access on its own.
 ANON_KEY = (
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
     ".eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhbnprdXNmb3BzZHNleXR0cXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDE0MjI1NjIsImV4cCI6MjAxNjk5ODU2Mn0"
