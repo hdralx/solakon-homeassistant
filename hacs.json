@@ -1,4 +1,6 @@
 {
   "name": "Solakon Solar",
-  "render_readme": false
+  "content_in_root": false,
+  "filename": "solakon.zip",
+  "render_readme": true
 }

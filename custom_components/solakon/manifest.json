@@ -4,6 +4,7 @@
   "codeowners": ["@hdralx"],
   "config_flow": true,
   "documentation": "https://github.com/hdralx/solakon-homeassistant",
+  "issue_tracker": "https://github.com/hdralx/solakon-homeassistant/issues",
   "iot_class": "cloud_polling",
   "requirements": [],
   "version": "1.0.0"
